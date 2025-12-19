@@ -191,7 +191,7 @@ See the commands [here](https://technotim.live/posts/k3s-etcd-ansible/#testing-y
 
 ### Troubleshooting
 
-Be sure to see [this post](https://github.com/techno-tim/k3s-ansible/discussions/20) on how to troubleshoot common problems
+Be sure to see [this post](https://github.com/timothystewart6/k3s-ansible/discussions/20) on how to troubleshoot common problems
 
 ### Testing the playbook using molecule
 
@@ -218,7 +218,7 @@ collections:
   - name: community.general
   - name: ansible.posix
   - name: kubernetes.core
-  - name: https://github.com/techno-tim/k3s-ansible.git
+  - name: https://github.com/timothystewart6/k3s-ansible.git
     type: git
     version: master
 ```
