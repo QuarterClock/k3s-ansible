@@ -8,3 +8,7 @@ argument_specs:
         description:
           - Indicates whether the k3s prerequisites for Raspberry Pi should be
           - set up (possible values are `present` and `absent`)
+
+      install_longhorn_dependencies:
+        description: If we should check and install Longhorn system dependencies
+        default: true

@@ -57,3 +57,11 @@
       {% if state == "present" %}setup{% else %}teardown{% endif %}
   when:
     - raspberry_pi|default(false)
+
+- name: Execute packages related tasks - {{ action_ }}
+  ansible.builtin.include_tasks: "{{ action_ }}/packages.yml"
+  vars:
+    action_: >-
+      {% if state == "present" %}setup{% else %}teardown{% endif %}
+  when:
+    - install_longhorn_dependencies|default(true)

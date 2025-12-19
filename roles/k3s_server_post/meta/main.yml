@@ -151,7 +151,3 @@ argument_specs:
       metal_lb_bgp_peer_address:
         description: BGP peer address
         default: ~
-
-      check_longhorn_dependencies:
-        description: If we should check for Longhorn system dependencies
-        default: true
