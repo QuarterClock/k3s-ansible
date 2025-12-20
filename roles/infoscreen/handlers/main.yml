@@ -2,7 +2,7 @@
 - name: Restart service
   ansible.builtin.service:
     name: "infoscreen"
-    state: restarted
+    infoscreen_state: restarted
   listen: restart_service
 
 - name: Reboot

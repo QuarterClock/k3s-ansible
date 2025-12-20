@@ -3,5 +3,5 @@
 # Possible values:
 #   - present
 #   - absent
-state: present
+rpi_state: present
 install_longhorn_dependencies: true

@@ -2,5 +2,5 @@
 - name: Remove linux-modules-extra-raspi
   ansible.builtin.apt:
     name: linux-modules-extra-raspi
-    state: absent
+    rpi_state: absent
   when: ansible_distribution_version is version('24.04', '<')

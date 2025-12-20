@@ -1,5 +1,5 @@
 ---
-state: present
+infoscreen_state: present
 infoscreen_enabled: false
 infoscreen_python_interpreter: /usr/bin/python3
 infoscreen_dest_path: /usr/local/bin

@@ -26,14 +26,14 @@
 - name: Ensure I2C kernel module is loaded
   community.general.modprobe:
     name: i2c-dev
-    state: present
+    infoscreen_state: present
 
 - name: Auto-load I2C module on boot (/etc/modules)
   ansible.builtin.lineinfile:
     path: /etc/modules
     regexp: '^i2c-dev'
     line: 'i2c-dev'
-    state: present
+    infoscreen_state: present
 
 - name: Install dependencies
   ansible.builtin.apt:
@@ -71,4 +71,4 @@
   ansible.builtin.service:
     name: "{{ service_name }}"
     enabled: yes
-    state: started
+    infoscreen_state: started

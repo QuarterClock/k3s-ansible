@@ -2,7 +2,7 @@
 - name: Remove kernel module
   community.general.modprobe:
     name: iscsi_tcp
-    state: absent
+    rpi_state: absent
 
 - name: Remove dependencies
   ansible.builtin.apt:
@@ -11,5 +11,5 @@
       - cryptsetup
       - nfs-common
       - open-iscsi
-    state: absent
+    rpi_state: absent
     purge: true

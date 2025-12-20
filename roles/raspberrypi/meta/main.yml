@@ -3,7 +3,7 @@ argument_specs:
   main:
     short_description: Adjust some Raspberry Pi specific requisites
     options:
-      state:
+      rpi_state:
         default: present
         description:
           - Indicates whether the k3s prerequisites for Raspberry Pi should be
