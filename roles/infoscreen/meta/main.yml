@@ -1,0 +1,22 @@
+---
+argument_specs:
+  main:
+    short_description: Setup infoscreen dependencies
+    options:
+      state:
+        default: present
+        description:
+          - Indicates whether the k3s prerequisites for Raspberry Pi should be
+          - set up (possible values are `present` and `absent`)
+
+      infoscreen_enabled:
+        description: Should we enable Infoscreen and it's depndencies
+        required: true
+
+      infoscreen_python_interpreter:
+        description: Extra arguments for agents nodes
+        default: /usr/bin/python3
+
+      infoscreen_dest_path:
+        description: Name of the master group
+        default: /usr/local/bin

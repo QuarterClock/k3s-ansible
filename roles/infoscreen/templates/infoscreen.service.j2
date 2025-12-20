@@ -1,0 +1,15 @@
+[Unit]
+Description=Autostart for Infoscreen
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+# Adjust arguments here if your script needs them
+ExecStart={{ infoscreen_python_interpreter }} {{ infoscreen_dest_path }}/infoscreen.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

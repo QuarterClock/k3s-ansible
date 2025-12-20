@@ -1,0 +1,11 @@
+---
+- name: Restart service
+  ansible.builtin.service:
+    name: "infoscreen"
+    state: restarted
+  listen: restart_service
+
+- name: Reboot
+  ansible.builtin.reboot:
+    reboot_command: "{{ custom_reboot_command | default(omit) }}"
+  listen: reboot

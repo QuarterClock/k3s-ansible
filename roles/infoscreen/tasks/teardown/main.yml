@@ -1,0 +1,31 @@
+---
+- name: Stop and disable the service
+  ansible.builtin.service:
+    name: infoscreen
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+- name: Remove Systemd service file
+  ansible.builtin.file:
+    path: "/etc/systemd/system/infoscreen.service"
+    state: absent
+
+- name: Force systemd to reread configs (daemon-reload)
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Remove Python script
+  ansible.builtin.file:
+    path: "{{ script_dest_path }}/infoscreen.py"
+    state: absent
+
+- name: Uninstall dependencies
+  ansible.builtin.apt:
+    name:
+      - python3-psutil
+      - python3-pil
+      - python3-rpi.gpio
+      - python3-smbus
+      - i2c-tools
+    state: absent

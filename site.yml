@@ -31,6 +31,8 @@
       become: true
     - role: raspberrypi
       become: true
+    - role: infoscreen
+      become: true
     - role: k3s_custom_registries
       become: true
       when: custom_registries

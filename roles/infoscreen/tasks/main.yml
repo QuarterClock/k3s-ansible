@@ -1,0 +1,8 @@
+---
+- name: Execute {{ action_ }} steps
+  ansible.builtin.include_tasks: "{{ action_ }}/main.yml"
+  vars:
+    action_: >-
+      {% if state == "present" %}setup{% else %}teardown{% endif %}
+  when:
+    - raspberry_pi|default(false)

@@ -1,0 +1,74 @@
+---
+- name: Determine boot config location
+  ansible.builtin.stat:
+    path: /boot/firmware/config.txt
+  register: firmware_config
+
+- name: Set config path variable
+  ansible.builtin.set_fact:
+    boot_config_path: "{{ '/boot/firmware/config.txt' if firmware_config.stat.exists else '/boot/config.txt' }}"
+
+- name: Enable Hardware Interfaces
+  block:
+    - name: Enable I2C
+      ansible.builtin.lineinfile:
+        path: "{{ boot_config_path }}"
+        regexp: '^#?dtparam=i2c_arm='
+        line: 'dtparam=i2c_arm=on'
+    
+    - name: Enable SPI
+      ansible.builtin.lineinfile:
+        path: "{{ boot_config_path }}"
+        regexp: '^#?dtparam=spi='
+        line: 'dtparam=spi=on'
+  notify: reboot
+
+- name: Ensure I2C kernel module is loaded
+  community.general.modprobe:
+    name: i2c-dev
+    state: present
+
+- name: Auto-load I2C module on boot (/etc/modules)
+  ansible.builtin.lineinfile:
+    path: /etc/modules
+    regexp: '^i2c-dev'
+    line: 'i2c-dev'
+    state: present
+
+- name: Install dependencies
+  ansible.builtin.apt:
+    name:
+      - python3-psutil
+      - python3-pil
+      - python3-rpi.gpio
+      - python3-smbus
+      - i2c-tools
+
+- name: Deploy application files
+  block:
+    - name: Copy Python script to the remote host
+      ansible.builtin.copy:
+        src: "templates/infoscreen.py"
+        dest: "{{ script_dest_path }}/infoscreen.py"
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Create Systemd service file
+      ansible.builtin.template:
+        src: script.service.j2
+        dest: "/etc/systemd/system/infoscreen.service"
+        owner: root
+        group: root
+        mode: '0644'
+  notify: restart_service
+
+- name: Force systemd to reread configs (daemon-reload)
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Enable and start the service
+  ansible.builtin.service:
+    name: "{{ service_name }}"
+    enabled: yes
+    state: started
