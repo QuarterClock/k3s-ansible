@@ -13,10 +13,9 @@ from dataclasses import dataclass
 WIDTH = 128
 HEIGHT = 32
 PIN_BUTTON = 20
-PIN_LED = 23
 
 # Timing
-LOOP_SPEED = 0.1 
+LOOP_SPEED = 0.1
 SCREEN_TIMEOUT_TICKS = int(15.0 / LOOP_SPEED)
 REBOOT_HOLD_TICKS = int(3.0 / LOOP_SPEED)
 SHUTDOWN_HOLD_TICKS = int(6.0 / LOOP_SPEED)
@@ -55,7 +54,6 @@ class AppState:
 
 # --- HARDWARE SETUP ---
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(PIN_LED, GPIO.OUT)
 GPIO.setup(PIN_BUTTON, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 i2c = busio.I2C(board.SCL, board.SDA)
@@ -189,8 +187,6 @@ def draw_overlay(text_or_action):
 
 # --- MAIN ---
 def main():
-    GPIO.output(PIN_LED, GPIO.HIGH)
-    
     # Initial Splash
     draw_overlay("Infoscreen Started...")
     disp.image(image)
