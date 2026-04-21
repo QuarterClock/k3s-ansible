@@ -13,27 +13,27 @@
     - name: Enable I2C
       ansible.builtin.lineinfile:
         path: "{{ boot_config_path }}"
-        regexp: '^#?dtparam=i2c_arm='
-        line: 'dtparam=i2c_arm=on'
-    
+        regexp: "^#?dtparam=i2c_arm="
+        line: "dtparam=i2c_arm=on"
+
     - name: Enable SPI
       ansible.builtin.lineinfile:
         path: "{{ boot_config_path }}"
-        regexp: '^#?dtparam=spi='
-        line: 'dtparam=spi=on'
+        regexp: "^#?dtparam=spi="
+        line: "dtparam=spi=on"
   notify: reboot
 
 - name: Ensure I2C kernel module is loaded
   community.general.modprobe:
     name: i2c-dev
-    infoscreen_state: present
+    state: present
 
 - name: Auto-load I2C module on boot (/etc/modules)
   ansible.builtin.lineinfile:
     path: /etc/modules
-    regexp: '^i2c-dev'
-    line: 'i2c-dev'
-    infoscreen_state: present
+    regexp: "^i2c-dev"
+    line: "i2c-dev"
+    state: present
 
 - name: Install dependencies
   ansible.builtin.apt:
@@ -49,18 +49,18 @@
     - name: Copy Python script to the remote host
       ansible.builtin.copy:
         src: "templates/infoscreen.py"
-        dest: "{{ script_dest_path }}/infoscreen.py"
+        dest: "{{ infoscreen_dest_path }}/infoscreen.py"
         owner: root
         group: root
-        mode: '0755'
+        mode: "0755"
 
     - name: Create Systemd service file
       ansible.builtin.template:
-        src: script.service.j2
+        src: infoscreen.service.j2
         dest: "/etc/systemd/system/infoscreen.service"
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
   notify: restart_service
 
 - name: Force systemd to reread configs (daemon-reload)
@@ -69,6 +69,6 @@
 
 - name: Enable and start the service
   ansible.builtin.service:
-    name: "{{ service_name }}"
+    name: infoscreen
     enabled: yes
-    infoscreen_state: started
+    state: started

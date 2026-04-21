@@ -8,9 +8,9 @@
     - "system/{{ ansible_distribution }}.yml"
     - "system/default.yml"
   when:
-    - raspberry_pi|default(false)
+    - raspberry_pi | default(false)
 
 - name: Execute packages related tasks - setup
   ansible.builtin.include_tasks: "packages.yml"
   when:
-    - install_longhorn_dependencies|default(true)
+    - install_longhorn_dependencies | default(true)

@@ -40,13 +40,13 @@ class AppState:
     """Holds all mutable state for the application."""
     mode: MenuState = MenuState.INFO
     screen: InfoScreen = InfoScreen.NETWORK
-    
+
     # Timers & Counters
     display_timer: int = SCREEN_TIMEOUT_TICKS
     btn_hold_ticks: int = 0
     stats_tick: int = STATS_UPDATE_TICKS  # Force update on start
     cycle_tick: int = 0
-    
+
     # Data Cache
     cache_net: tuple = ("Loading...", "...")
     cache_perf: tuple = (0, 0, 0)
@@ -97,7 +97,7 @@ def handle_input(state: AppState):
             state.mode = MenuState.SHUTDOWN_WAIT
         elif state.btn_hold_ticks >= REBOOT_HOLD_TICKS:
             state.mode = MenuState.REBOOT_WAIT
-    
+
     else: # Button Released
         if state.btn_hold_ticks > 0:
             # Execute Action if needed
@@ -113,7 +113,7 @@ def handle_input(state: AppState):
                 disp.show()
                 run_sys_command("sudo shutdown now")
                 exit(0)
-            
+
             # Reset to Info Mode
             state.mode = MenuState.INFO
             state.screen = InfoScreen.NETWORK
@@ -161,14 +161,14 @@ def draw_interface(state: AppState):
                 draw.text((0, 0),  f"CPU : {c:.1f}%", font=font, fill=255)
                 draw.text((0, 11), f"RAM : {m:.1f}%", font=font, fill=255)
                 draw.text((0, 21), f"DISK: {d:.1f}%", font=font, fill=255)
-        
+
         elif state.mode == MenuState.REBOOT_WAIT:
             draw_overlay("REBOOT")
         elif state.mode == MenuState.SHUTDOWN_WAIT:
             draw_overlay("SHUTDOWN")
-        
+
         state.display_timer -= 1
-    
+
     # Push to Hardware
     disp.image(image)
     disp.show()

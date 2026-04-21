@@ -49,6 +49,7 @@ argument_specs:
         description:
           - Enable cilium BGP control plane for LB services and pod cidrs.
           - Disables the use of MetalLB.
+          - Applies Cilium 1.16+ BGP CRDs (cilium.io/v2); requires a matching Cilium version.
         type: bool
         default: false
 
@@ -87,6 +88,12 @@ argument_specs:
         description: Enable Cilium Hubble
         type: bool
         default: true
+
+      cilium_connectivity_hubble_server:
+        description: >
+          gRPC address for `cilium connectivity test` when using `cilium hubble port-forward`.
+          Use 127.0.0.1:4245 because localhost can resolve to [::1] while port-forward binds IPv4 only.
+        default: 127.0.0.1:4245
 
       cilium_iface:
         description: The network interface used for when Cilium is enabled

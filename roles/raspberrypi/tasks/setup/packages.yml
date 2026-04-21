@@ -10,5 +10,5 @@
 - name: Ensure iscsid loaded
   community.general.modprobe:
     name: iscsi_tcp
-    rpi_state: present
+    state: present
     persistent: present

@@ -223,7 +223,7 @@
       block:
         - name: Set _cilium_bgp_neighbors fact
           ansible.builtin.set_fact:
-            _cilium_bgp_neighbors: "{{ lookup('community.general.merge_variables', '^cilium_bgp_neighbors__.+$', initial_value=cilium_bgp_neighbors, groups=cilium_bgp_neighbors_groups) }}"  # yamllint disable-line rule:line-length
+            _cilium_bgp_neighbors: "{{ lookup('community.general.merge_variables', '^cilium_bgp_neighbors__.+$', initial_value=cilium_bgp_neighbors, groups=cilium_bgp_neighbors_groups) }}" # yamllint disable-line rule:line-length
 
         - name: Copy BGP manifests to first master
           ansible.builtin.template:
@@ -246,11 +246,13 @@
             msg: "{{ apply_cr.stderr }}"
           when: "'is invalid' in apply_cr.stderr"
 
-        - name: Test for BGP config resources
-          ansible.builtin.command: "{{ item }}"
+        - name: Test for BGP config resources (cilium.io/v2)
+          ansible.builtin.command: "{{ k3s_kubectl_binary | default('k3s kubectl') }} get {{ item }}"
           loop:
-            - "{{ k3s_kubectl_binary | default('k3s kubectl') }} get CiliumBGPPeeringPolicy.cilium.io"
-            - "{{ k3s_kubectl_binary | default('k3s kubectl') }} get CiliumLoadBalancerIPPool.cilium.io"
+            - CiliumBGPPeerConfig.cilium.io
+            - CiliumBGPAdvertisement.cilium.io
+            - CiliumBGPClusterConfig.cilium.io
+            - CiliumLoadBalancerIPPool.cilium.io
           changed_when: false
           loop_control:
             label: "{{ item }}"

@@ -10,8 +10,10 @@ argument_specs:
           - set up (possible values are `present` and `absent`)
 
       infoscreen_enabled:
-        description: Should we enable Infoscreen and it's depndencies
-        required: true
+        default: false
+        description: When true, install dependencies and deploy the infoscreen service (present only).
+        required: false
+        type: bool
 
       infoscreen_python_interpreter:
         description: Extra arguments for agents nodes

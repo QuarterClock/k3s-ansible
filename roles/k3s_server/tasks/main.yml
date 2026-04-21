@@ -42,11 +42,20 @@
 - name: Verification
   when: not ansible_check_mode
   block:
-    - name: Verify that all nodes actually joined (check k3s-init.service if this fails)
-      ansible.builtin.command:
-        cmd: "{{ k3s_kubectl_binary | default('k3s kubectl') }} get nodes -l 'node-role.kubernetes.io/master=true' -o=jsonpath='{.items[*].metadata.name}'" # yamllint disable-line rule:line-length
+    # With external CNI (Cilium/Calico), nodes stay NotReady until k3s_server_post — we only need API + registration.
+    # Newer Kubernetes uses node-role.kubernetes.io/control-plane; legacy master= label alone would match zero nodes.
+    - name: Verify control-plane nodes are registered (check k3s-init.service if this fails) # noqa risky-shell-pipe
+      ansible.builtin.shell:
+        cmd: |
+          set -o pipefail
+          {{ k3s_kubectl_binary | default('k3s kubectl') }} get nodes -o json \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); k=('node-role.kubernetes.io/control-plane','node-role.kubernetes.io/master'); print(' '.join(i['metadata']['name'] for i in d.get('items',[]) if any(x in (i.get('metadata',{}).get('labels') or {}) for x in k)))"
+        executable: /bin/bash
       register: nodes
-      until: nodes.rc == 0 and (nodes.stdout.split() | length) == (groups[group_name_master | default('master')] | length) # yamllint disable-line rule:line-length
+      until: >-
+        nodes.rc == 0
+        and ((nodes.stdout | default('')).split() | length)
+        >= (1 + (groups[group_name_master | default('master')] | list).index(inventory_hostname))
       retries: "{{ retry_count | default(20) }}"
       delay: 10
       changed_when: false

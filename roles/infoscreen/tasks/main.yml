@@ -5,4 +5,5 @@
     action_: >-
       {% if infoscreen_state == "present" %}setup{% else %}teardown{% endif %}
   when:
-    - raspberry_pi|default(false)
+    - raspberry_pi | default(false)
+    - (infoscreen_state == "present" and infoscreen_enabled | bool) or infoscreen_state == "absent"

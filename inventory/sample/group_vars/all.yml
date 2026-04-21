@@ -21,6 +21,10 @@ calico_tag: v3.28.0 # calico version tag
 cilium_mode: native # native when nodes on same subnet or using bgp, else set routed
 cilium_tag: v1.16.0 # cilium version tag
 cilium_hubble: true # enable hubble observability relay and ui
+# If you run `cilium connectivity test`: run `cilium hubble port-forward`, then either
+#   cilium connectivity test --hubble-server=127.0.0.1:4245
+# or skip Hubble in the test: cilium connectivity test --hubble=false
+# (default localhost:4245 often uses [::1] while port-forward is on 127.0.0.1 only)
 
 # if using calico or cilium, you may specify the cluster pod cidr pool
 cluster_cidr: 10.52.0.0/16

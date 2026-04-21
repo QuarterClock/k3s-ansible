@@ -39,6 +39,7 @@
 
 - name: Setup k3s servers
   hosts: master
+  serial: 1
   environment: "{{ proxy_env | default({}) }}"
   roles:
     - role: k3s_server

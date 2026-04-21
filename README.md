@@ -34,6 +34,8 @@ on processor architecture:
 
 - [`netaddr` package](https://pypi.org/project/netaddr/) must be available to Ansible. If you have installed Ansible via apt, this is already taken care of. If you have installed Ansible via `pip`, make sure to install `netaddr` into the respective virtual environment.
 
+- **Cilium / Hubble:** If you run `cilium connectivity test` with Hubble flow checks, start relay forwarding first (`cilium hubble port-forward` in another shell on a host with `KUBECONFIG` set). The CLI defaults to `localhost:4245`, which often resolves to **`[::1]`**, while port-forward listens on **`127.0.0.1`** only — you then get `dial tcp [::1]:4245: connect: connection refused` and a warning that Hubble telescope was disabled (tests usually continue). **Fix:** pass **`--hubble-server=127.0.0.1:4245`**, or **`--hubble=false`** to skip Hubble entirely.
+
 - `server` and `agent` nodes should have passwordless SSH access, if not you can supply arguments to provide credentials `--ask-pass --ask-become-pass` to each command.
 
 ## 🚀 Getting Started
@@ -132,7 +134,7 @@ See the commands [here](https://technotim.live/posts/k3s-etcd-ansible/#testing-y
 | `k3s_agent`, `k3s_server` | `proxy_env.NO_PROXY` | string | ❌ | Required | Addresses that will not use the proxies |
 | `k3s_agent`, `k3s_server`, `reset` | `systemd_dir` | string | `/etc/systemd/system` | Not required | Path to systemd services |
 | `k3s_custom_registries` | `custom_registries_yaml` | string | ❌ | Required | YAML block defining custom registries. The following is an example that pulls all images used in this playbook through your private registries. It also allows you to pull your own images from your private registry, without having to use imagePullSecrets in your deployments. If all you need is your own images and you don't care about caching the docker/quay/ghcr.io images, you can just remove those from the mirrors: section. |
-| `k3s_server`, `k3s_server_post` | `cilium_bgp` | bool | `~` | Not required | Enable cilium BGP control plane for LB services and pod cidrs. Disables the use of MetalLB. |
+| `k3s_server`, `k3s_server_post` | `cilium_bgp` | bool | `~` | Not required | Enable cilium BGP control plane for LB services and pod cidrs. Disables the use of MetalLB. Manifests use **cilium.io/v2** BGP CRDs (Cilium **1.16+**); align `cilium_tag` accordingly. |
 | `k3s_server`, `k3s_server_post` | `cilium_iface` | string | ❌ | Not required | The network interface used for when Cilium is enabled |
 | `k3s_server` | `extra_server_args` | string | `""` | Not required | Extra arguments for server nodes |
 | `k3s_server` | `k3s_create_kubectl_symlink` | bool | `false` | Not required | Create the kubectl -> k3s symlink |
@@ -170,8 +172,8 @@ See the commands [here](https://technotim.live/posts/k3s-etcd-ansible/#testing-y
 | `k3s_server_post` | `cilium_bgp_neighbors_groups` | list | `['k3s_all']` | Not required | Inventory group in which to search for additional `cilium_bgp_neighbors` parameters to merge. |
 | `k3s_server_post` | `cilium_bgp_lb_cidr` | string | `192.168.31.0/24` | Not required | BGP load balancer IP range |
 | `k3s_server_post` | `cilium_exportPodCIDR` | bool | `true` | Not required | Export pod CIDR |
-| `k3s_server_post` | `cilium_hubble` | bool | `true` | Not required | Enable Cilium Hubble |
-| `k3s_server_post` | `cilium_hubble` | bool | `true` | Not required | Enable Cilium Hubble |
+| `k3s_server_post` | `cilium_hubble` | bool | `true` | Not required | Enable Cilium Hubble (in-cluster). For `cilium connectivity test` from a shell, see the **Cilium / Hubble** note under System requirements (use `--hubble-server=127.0.0.1:4245` with `cilium hubble port-forward`). |
+| `k3s_server_post` | `cilium_connectivity_hubble_server` | string | `127.0.0.1:4245` | Not required | Documented default for manual `cilium connectivity test --hubble-server=…` (avoids IPv6 localhost vs port-forward mismatch). |
 | `k3s_server_post` | `cilium_mode` | string | `native` | Not required | Inner-node communication mode (choices are `native` and `routed`) |
 | `k3s_server_post` | `cluster_cidr` | string | `10.52.0.0/16` | Not required | Inner-cluster IP range |
 | `k3s_server_post` | `enable_bpf_masquerade` | bool | `true` | Not required | Use IP masquerading |

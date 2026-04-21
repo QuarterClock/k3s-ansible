@@ -19,6 +19,8 @@ cilium_bgp_neighbors: []
 cilium_bgp_neighbors_groups: ['k3s_all']
 cilium_bgp_lb_cidr: 192.168.31.0/24
 cilium_hubble: true
+# For `cilium connectivity test` + `cilium hubble port-forward`: use 127.0.0.1 (not localhost) for gRPC.
+cilium_connectivity_hubble_server: 127.0.0.1:4245
 cilium_mode: native
 
 cluster_cidr: 10.52.0.0/16

@@ -35,7 +35,7 @@
 - name: Install iptables
   ansible.builtin.apt:
     name: iptables
-    rpi_state: present
+    state: present
 
 - name: Flush iptables before changing to iptables-legacy
   ansible.builtin.iptables:
