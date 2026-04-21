@@ -9,6 +9,7 @@
     boot_config_path: "{{ '/boot/firmware/config.txt' if firmware_config.stat.exists else '/boot/config.txt' }}"
 
 - name: Enable Hardware Interfaces
+  notify: reboot
   block:
     - name: Enable I2C
       ansible.builtin.lineinfile:
@@ -21,7 +22,6 @@
         path: "{{ boot_config_path }}"
         regexp: "^#?dtparam=spi="
         line: "dtparam=spi=on"
-  notify: reboot
 
 - name: Ensure I2C kernel module is loaded
   community.general.modprobe:
@@ -45,6 +45,7 @@
       - i2c-tools
 
 - name: Deploy application files
+  notify: restart_service
   block:
     - name: Copy Python script to the remote host
       ansible.builtin.copy:
@@ -61,14 +62,13 @@
         owner: root
         group: root
         mode: "0644"
-  notify: restart_service
 
 - name: Force systemd to reread configs (daemon-reload)
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
 
 - name: Enable and start the service
   ansible.builtin.service:
     name: infoscreen
-    enabled: yes
+    enabled: true
     state: started

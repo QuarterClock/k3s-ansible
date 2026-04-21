@@ -49,7 +49,21 @@
         cmd: |
           set -o pipefail
           {{ k3s_kubectl_binary | default('k3s kubectl') }} get nodes -o json \
-            | python3 -c "import json,sys; d=json.load(sys.stdin); k=('node-role.kubernetes.io/control-plane','node-role.kubernetes.io/master'); print(' '.join(i['metadata']['name'] for i in d.get('items',[]) if any(x in (i.get('metadata',{}).get('labels') or {}) for x in k)))"
+            | python3 -c "$(cat <<'PY'
+          import json, sys
+          d = json.load(sys.stdin)
+          roles = (
+              'node-role.kubernetes.io/control-plane',
+              'node-role.kubernetes.io/master',
+          )
+          names = [
+              i['metadata']['name']
+              for i in d.get('items', [])
+              if any(r in (i.get('metadata', {}).get('labels') or {}) for r in roles)
+          ]
+          print(' '.join(names))
+          PY
+          )"
         executable: /bin/bash
       register: nodes
       until: >-

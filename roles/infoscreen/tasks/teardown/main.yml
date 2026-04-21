@@ -3,8 +3,8 @@
   ansible.builtin.service:
     name: infoscreen
     state: stopped
-    enabled: no
-  ignore_errors: yes
+    enabled: false
+  failed_when: false
 
 - name: Remove Systemd service file
   ansible.builtin.file:
@@ -13,7 +13,7 @@
 
 - name: Force systemd to reread configs (daemon-reload)
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
 
 - name: Remove Python script
   ansible.builtin.file:

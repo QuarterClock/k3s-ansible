@@ -45,7 +45,7 @@
   when:
     - detected_distribution | default("") == "Raspbian"
 
-- name: Execute {{ action_ }} steps
+- name: Execute steps for action {{ action_ }}
   ansible.builtin.include_tasks: "{{ action_ }}/main.yml"
   vars:
     action_: >-
