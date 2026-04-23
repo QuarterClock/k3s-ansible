@@ -10,10 +10,10 @@
     - k3s-node
     - k3s-init
 
-- name: RUN pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
-  register: pkill_containerd_shim_runc
-  ansible.builtin.command: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim-runc"
-  changed_when: pkill_containerd_shim_runc.rc == 0
+- name: Kill any leftover k3s containerd shims (all shim variants, not just runc)
+  ansible.builtin.command: pkill -9 -f "k3s/data/[^/]+/bin/containerd-shim"
+  register: pkill_containerd_shim
+  changed_when: pkill_containerd_shim.rc == 0
   failed_when: false
 
 - name: Umount k3s filesystems
@@ -36,7 +36,10 @@
   with_items:
     - /usr/local/bin/k3s
     - "{{ systemd_dir }}/k3s.service"
+    - "{{ systemd_dir }}/k3s.service.d"
     - "{{ systemd_dir }}/k3s-node.service"
+    - "{{ systemd_dir }}/k3s-node.service.d"
+    - /run/systemd/transient/k3s-init.service
     - /etc/rancher/k3s
     - /run/k3s
     - /run/flannel
@@ -47,20 +50,20 @@
     - /var/lib/cni/
     - /etc/cni/net.d
 
-- name: Remove K3s http_proxy files
-  ansible.builtin.file:
-    name: "{{ item }}"
-    state: absent
-  with_items:
-    - "{{ systemd_dir }}/k3s.service.d/http_proxy.conf"
-    - "{{ systemd_dir }}/k3s.service.d"
-    - "{{ systemd_dir }}/k3s-node.service.d/http_proxy.conf"
-    - "{{ systemd_dir }}/k3s-node.service.d"
-  when: proxy_env is defined
-
-- name: Reload daemon_reload
+- name: Reload systemd daemon (drops in-memory unit cache after file removal)
   ansible.builtin.systemd:
     daemon_reload: true
+
+- name: Reset failed k3s units (so re-runs without reboot are not blocked by stale state)
+  ansible.builtin.command:
+    cmd: systemctl reset-failed {{ item }}
+  register: reset_failed
+  changed_when: reset_failed.rc == 0
+  failed_when: false
+  with_items:
+    - k3s
+    - k3s-node
+    - k3s-init
 
 - name: Remove tmp directory used for manifests
   ansible.builtin.file:

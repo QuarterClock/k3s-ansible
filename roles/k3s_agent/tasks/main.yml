@@ -28,6 +28,20 @@
     group: root
     mode: "0755"
 
+# Preflight: the `k3s-node.service` systemd unit is Type=notify with
+# TimeoutStartSec=0. If the API VIP is missing, k3s-agent enters the
+# "Failed to validate connection to cluster" retry loop and never fires
+# sd_notify READY=1, so the restart below blocks indefinitely. Checking
+# VIP reachability here fails fast in ~90s with a clear message instead
+# of silently hanging for 5+ minutes.
+- name: Wait for API VIP to be reachable from agent on {{ apiserver_endpoint }}
+  ansible.builtin.wait_for:
+    host: "{{ apiserver_endpoint }}"
+    port: 6443
+    timeout: 90
+    delay: 2
+    state: started
+
 - name: Manage k3s service
   ansible.builtin.systemd:
     name: k3s-node

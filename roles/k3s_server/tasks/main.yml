@@ -102,6 +102,58 @@
     state: restarted
     enabled: true
 
+# The three tasks below close a first-boot race that otherwise leaves the
+# cluster without the kube-vip DaemonSet (and therefore without the API VIP):
+#
+#   1. `k3s-init` drops manifests into /var/lib/rancher/k3s/server/manifests/
+#      and k3s's addon-deployer applies them asynchronously.
+#   2. The Verification block only waits for *node registration*, not for the
+#      addon-deployer to finish, so Ansible can kill k3s-init mid-apply.
+#   3. Later in this role the manifest files are deleted from disk. If the
+#      addon-deployer hasn't picked them up yet when `k3s.service` restarts,
+#      the DaemonSet is simply never created — the VIP never comes up — every
+#      agent's `Manage k3s service` task hangs for 5+ minutes on sd_notify.
+#
+# Doing an explicit `kubectl apply` + readiness wait here makes the role
+# self-healing regardless of addon-deployer timing, and fails fast with a
+# clear message if kube-vip can't actually run (bad image pull, missing
+# control-plane label, wrong interface, etc.) instead of cascading into the
+# agent role as a silent hang.
+
+- name: Re-apply bootstrap manifests (idempotent; closes the addon-deployer race)
+  ansible.builtin.command:
+    cmd: "{{ k3s_kubectl_binary | default('k3s kubectl') }} apply -f /var/lib/rancher/k3s/server/manifests/"
+  register: bootstrap_manifests_apply
+  changed_when: >-
+    bootstrap_manifests_apply.rc == 0
+    and ('configured' in (bootstrap_manifests_apply.stdout | default(''))
+         or 'created' in (bootstrap_manifests_apply.stdout | default('')))
+  until: bootstrap_manifests_apply.rc == 0
+  retries: 24
+  delay: 5
+  when: ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname']
+
+- name: Wait for kube-vip DaemonSet to have at least one Ready pod
+  ansible.builtin.command:
+    cmd: >-
+      {{ k3s_kubectl_binary | default('k3s kubectl') }}
+      -n kube-system get ds kube-vip-ds -o jsonpath={.status.numberReady}
+  register: kube_vip_ds_ready
+  changed_when: false
+  until: kube_vip_ds_ready.rc == 0 and (kube_vip_ds_ready.stdout | default('0') | int) >= 1
+  retries: 36
+  delay: 5
+  when: ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname']
+
+- name: Wait for API VIP to be reachable on {{ apiserver_endpoint }}
+  ansible.builtin.wait_for:
+    host: "{{ apiserver_endpoint }}"
+    port: 6443
+    timeout: 180
+    delay: 2
+    state: started
+  when: ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname']
+
 - name: Wait for node-token
   ansible.builtin.wait_for:
     path: /var/lib/rancher/k3s/server/node-token
