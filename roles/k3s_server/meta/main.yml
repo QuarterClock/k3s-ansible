@@ -22,6 +22,15 @@ argument_specs:
         description: Extra arguments for server nodes
         default: ""
 
+      k3s_bundled_disable:
+        description:
+          - k3s components to pass as repeated --disable flags before extra_server_args.
+          - Default disables bundled ServiceLB and Traefik (use external LB/ingress).
+        type: list
+        default:
+          - servicelb
+          - traefik
+
       group_name_master:
         description: Name of the master group
         default: master

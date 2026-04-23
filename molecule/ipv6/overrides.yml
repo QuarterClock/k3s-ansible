@@ -44,8 +44,6 @@
           {{ extra_args }}
           --tls-san {{ apiserver_endpoint }}
           {{ '--node-taint node-role.kubernetes.io/master=true:NoSchedule' if k3s_master_taint else '' }}
-          --disable servicelb
-          --disable traefik
           --disable-network-policy
           --cluster-cidr=10.42.0.0/16,fdad:bad:ba55:4200::/56
           --service-cidr=10.43.0.0/16,fdad:bad:ba55:4300::/108

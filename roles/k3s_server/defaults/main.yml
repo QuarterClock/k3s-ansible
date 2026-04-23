@@ -1,6 +1,13 @@
 ---
 extra_server_args: ""
 
+# Disable k3s-bundled ServiceLB (klipper) and Traefik. Use Cilium/MetalLB
+# and GitOps (e.g. home-infra Argo CD) for LoadBalancer and ingress instead.
+# Set to [] to keep k3s defaults.
+k3s_bundled_disable:
+  - servicelb
+  - traefik
+
 k3s_kubectl_binary: k3s kubectl
 
 group_name_master: master
@@ -26,6 +33,8 @@ metal_lb_type: native
 retry_count: 20
 
 # yamllint disable rule:line-length
+# Must match k3s.service.j2: k3s-init runs before the unit file exists, so bundled
+# disables belong here too — otherwise Traefik/ServiceLB install on first boot.
 server_init_args: >-
   {% if groups[group_name_master | default('master')] | length > 1 %}
     {% if ansible_hostname == hostvars[groups[group_name_master | default('master')][0]]['ansible_hostname'] %}
@@ -35,6 +44,7 @@ server_init_args: >-
     {% endif %}
     --token {{ k3s_token }}
   {% endif %}
+  {% for c in k3s_bundled_disable | default([]) %}--disable {{ c }} {% endfor %}
   {{ extra_server_args }}
 
 systemd_dir: /etc/systemd/system

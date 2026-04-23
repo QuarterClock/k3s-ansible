@@ -75,6 +75,14 @@ This requires at least k3s version `1.19.1` however the version is configurable 
 
 If needed, you can also edit `inventory/my-cluster/group_vars/all.yml` to match your environment.
 
+#### Bundled Traefik and ServiceLB
+
+The `k3s_server` role disables k3s's embedded **ServiceLB** and **Traefik** by default (`k3s_bundled_disable` in [`roles/k3s_server/defaults/main.yml`](roles/k3s_server/defaults/main.yml)), so the systemd unit includes `--disable servicelb` and `--disable traefik` before your `extra_server_args`. That matches homelab GitOps where Traefik and north–south load balancing are provided elsewhere (Cilium, MetalLB, or an Argo CD–managed chart).
+
+- To use k3s-bundled Traefik again, set `k3s_bundled_disable: []` in `group_vars/all.yml` and re-run the playbook.
+- If Traefik is **still** present after a change: workloads in **`kube-system`** are the old bundled install; a Traefik in namespace **`traefik`** (or similar) is almost certainly from Argo / Helm, not this playbook.
+- **Upgrading from a cluster created before the `k3s-init` fix:** the first `k3s-init` may already have applied Traefik. Re-run the playbook, then if Traefik remains in `kube-system`, remove k3s's install (often `kubectl -n kube-system get helmchart` / delete the `traefik` `HelmChart` CR, or `helm -n kube-system list` and uninstall the Traefik release). New installs with the current role skip Traefik on both `k3s-init` and `k3s.service`.
+
 ### ☸️ Create Cluster
 
 Start provisioning of the cluster using the following command:
