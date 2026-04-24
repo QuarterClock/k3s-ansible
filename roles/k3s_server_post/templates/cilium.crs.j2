@@ -16,9 +16,9 @@ spec:
   families:
     - afi: ipv4
       safi: unicast
-  advertisements:
-    matchLabels:
-      k3s-ansible.cilium.io/bgp-advert: "true"
+      advertisements:
+        matchLabels:
+          k3s-ansible.cilium.io/bgp-advert: "true"
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPAdvertisement
@@ -35,11 +35,11 @@ spec:
       service:
         addresses:
           - LoadBalancerIP
-        selector:
-          matchExpressions:
-            - key: somekey
-              operator: NotIn
-              values: ['never-used-value']
+      selector:
+        matchExpressions:
+          - key: somekey
+            operator: NotIn
+            values: ['never-used-value']
 ---
 apiVersion: cilium.io/v2
 kind: CiliumBGPClusterConfig
