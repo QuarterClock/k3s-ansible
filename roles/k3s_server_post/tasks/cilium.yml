@@ -238,13 +238,7 @@
             cmd: "{{ k3s_kubectl_binary | default('k3s kubectl') }} apply -f /tmp/k3s/cilium-bgp.yaml"
           register: apply_cr
           changed_when: "'configured' in apply_cr.stdout or 'created' in apply_cr.stdout"
-          failed_when: "'is invalid' in apply_cr.stderr"
-          ignore_errors: true
-
-        - name: Print error message if BGP manifests application fails
-          ansible.builtin.debug:
-            msg: "{{ apply_cr.stderr }}"
-          when: "'is invalid' in apply_cr.stderr"
+          failed_when: apply_cr.rc != 0
 
         - name: Test for BGP config resources (cilium.io/v2)
           ansible.builtin.command: "{{ k3s_kubectl_binary | default('k3s kubectl') }} get {{ item }}"
